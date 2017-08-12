@@ -1,1 +1,62 @@
+.model small
 
+.data
+
+.code
+.startup             
+
+MOV AH, 0h
+MOV AL, 12h
+INT 10h
+
+
+MOV AL, 0Eh
+MOV AH, 0Ch
+
+MOV CX, 170
+MOV DX, 190
+MOV BX, 470
+
+
+HTOP:
+INT 10h
+INC CX
+CMP BX, CX
+JNZ HTOP
+
+MOV CX, 170
+MOV DX, 290
+MOV BX, 470
+
+
+HLOW:
+INT 10h
+INC CX
+CMP BX, CX
+JNZ HLOW
+
+
+MOV CX, 370
+MOV DX, 90
+MOV BX, 390
+
+
+VRIGHT:
+INT 10h
+INC DX
+CMP BX, DX
+JNZ VRIGHT
+
+
+MOV CX, 270
+MOV DX, 90
+MOV BX, 390
+
+
+VLEFT:
+INT 10h
+INC DX
+CMP BX, DX
+JNZ VLEFT
+
+end
