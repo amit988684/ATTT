@@ -2,6 +2,10 @@
 
 .data
 
+currX DW ?
+currY DW ?
+tester DW ?
+
 .code
 .startup             
 
@@ -59,4 +63,67 @@ INC DX
 CMP BX, DX
 JNZ VLEFT
 
+
+mov ax, 1003h ; disable blinking.  
+mov bx, 0        
+int 10h
+
+; hide text cursor:
+mov ch, 32
+mov ah, 1
+int 10h
+
+; display mouse cursor:
+mov ax, 1
+int 33h  
+
+
+where:
+MOV AX, 3
+INT 33h
+MOV currX, CX
+MOV currY, DX
+CMP BX, 1
+JZ chk
+JNZ where
+JMP DONE
+
+
+chk:
+; For some unknown reason, you need to
+; divide the x-axis value by two.
+; This very problem took me days to solve.
+
+;MOV AX, currX 
+;MOV BX, 0002h
+;MOV DX, 0000h ; to avoid overflow, since this is a 16-bit divison
+;DIV BX
+;MOV AH, 00 
+;MOV currX, AX
+;MOV tester, AX
+
+MOV AX, 0154h
+CMP AX, currX
+JA where
+
+MOV AX, 03ACh
+CMP AX, currX
+JB where
+
+MOV AX, 05Ah
+CMP AX, currY
+JA where
+
+MOV AX, 0186h
+CMP AX, currY
+JB where
+
+
+MOV AX, 7
+
+
+
+
+
+DONE:
 end
