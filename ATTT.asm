@@ -75,8 +75,7 @@ int 10h
 
 ; display mouse cursor:
 mov ax, 1
-int 33h  
-
+int 33h
 
 where:
 MOV AX, 3
@@ -84,23 +83,15 @@ INT 33h
 MOV currX, CX
 MOV currY, DX
 CMP BX, 1
-JZ chk
+JZ chk_bound
 JNZ where
 JMP DONE
 
 
-chk:
-; For some unknown reason, you need to
-; divide the x-axis value by two.
-; This very problem took me days to solve.
+chk_bounds:
+; For some unknown reason, the value of the x-coordinate
+; is doubled. This very problem took me days to solve.
 
-;MOV AX, currX 
-;MOV BX, 0002h
-;MOV DX, 0000h ; to avoid overflow, since this is a 16-bit divison
-;DIV BX
-;MOV AH, 00 
-;MOV currX, AX
-;MOV tester, AX
 
 MOV AX, 0154h
 CMP AX, currX
@@ -117,12 +108,6 @@ JA where
 MOV AX, 0186h
 CMP AX, currY
 JB where
-
-
-MOV AX, 7
-
-
-
 
 
 DONE:
