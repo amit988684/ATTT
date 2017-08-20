@@ -4,7 +4,8 @@
 
 currX DW ?
 currY DW ?
-tester DW ?
+col DB ?
+row DB ?
 
 .code
 .startup             
@@ -83,7 +84,7 @@ INT 33h
 MOV currX, CX
 MOV currY, DX
 CMP BX, 1
-JZ chk_bound
+JZ chk_bounds
 JNZ where
 JMP DONE
 
@@ -107,8 +108,51 @@ JA where
 
 MOV AX, 0186h
 CMP AX, currY
-JB where
+JB where 
 
+
+; DETERMINING THE EXACT POSTION,
+; IN TERMS OF ROWS AND COLUMNS
+
+; Friendly reminder: remember to put values in hex
+; and the x-coordinate is doubled.
+
+chk_x:
+MOV AX, 021Ch
+CMP AX, currX
+JB chk_x_2
+MOV col, 1
+JMP chk_y
+
+chk_x_2:
+MOV AX, 02E4h
+CMP AX, currX
+JB assignc3
+MOV col, 2
+JMP chk_y
+
+assignc3:
+MOV col, 3 
+JMP chk_y
+
+chk_y:
+MOV AX, 0BEh
+CMP AX, currY
+JB chk_y_2
+MOV row, 1
+JMP DONE
+
+chk_y_2:
+MOV AX, 0122h
+CMP AX, currY
+JB assignr3
+MOV row, 2
+JMP DONE  
+
+assignr3:
+MOV row, 3 
+
+JMP DONE
 
 DONE:
 end
