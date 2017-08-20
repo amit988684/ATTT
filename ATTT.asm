@@ -3,12 +3,51 @@
 .data
 
 currX DW ?
-currY DW ?
+currY DW ?   
+mode DW ?
 col DB ?
 row DB ?
+pointX DW ?
+pointY DW ?
 
 .code
-.startup             
+.startup
+           
+
+drawX macro spx, spy
+    pusha
+    
+    MOV AL, 0Eh
+    MOV AH, 0Ch
+   
+    
+    MOV CX, spx
+    MOV DX, spy
+    MOV BX, 50D
+    ADD BX, spx
+    
+    DrawLeft:
+    INT 10h
+    INC CX
+    INC DX
+    CMP BX, CX
+    JNZ DrawLeft
+    
+    MOV CX, spx
+    ADD CX, 50D
+    MOV DX, spy
+    MOV BX, CX
+    SUB BX, 50D
+    
+    DrawRight:
+    INT 10H
+    DEC CX
+    INC DX
+    CMP BX, CX
+    JNZ DrawRight
+        
+    popa
+endm
 
 MOV AH, 0h
 MOV AL, 12h
@@ -122,6 +161,7 @@ MOV AX, 021Ch
 CMP AX, currX
 JB chk_x_2
 MOV col, 1
+MOV pointX, 195D
 JMP chk_y
 
 chk_x_2:
@@ -129,10 +169,12 @@ MOV AX, 02E4h
 CMP AX, currX
 JB assignc3
 MOV col, 2
+MOV pointX, 295D 
 JMP chk_y
 
 assignc3:
-MOV col, 3 
+MOV col, 3
+MOV pointX, 395D  
 JMP chk_y
 
 chk_y:
@@ -140,19 +182,25 @@ MOV AX, 0BEh
 CMP AX, currY
 JB chk_y_2
 MOV row, 1
-JMP DONE
+MOV pointY, 115D
+JMP draw
 
 chk_y_2:
 MOV AX, 0122h
 CMP AX, currY
 JB assignr3
 MOV row, 2
-JMP DONE  
+MOV pointY, 215D
+JMP draw  
 
 assignr3:
-MOV row, 3 
+MOV row, 3
+MOV pointY, 315D  
+JMP draw
 
-JMP DONE
+draw:
+drawX pointX, pointY
+
 
 DONE:
 end
