@@ -4,22 +4,32 @@
 
 currX DW ?
 currY DW ?   
-mode DW ?
 col DB ?
-row DB ?
+row DW ?
 pointX DW ?
 pointY DW ?
+box DW ?
+drawn DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 
 .code
 .startup
            
 
 drawX macro spx, spy
-    pusha
+    pusha     
+    
+    MOV SI, box
+    MOV AL, drawn[SI]
+    CMP AL, 1
+    JZ FINISH
+    
+    MOV BL, 1
+    MOV SI, box
+    MOV drawn[SI], BL  
     
     MOV AL, 0Eh
     MOV AH, 0Ch
-   
+    
     
     MOV CX, spx
     MOV DX, spy
@@ -47,8 +57,10 @@ drawX macro spx, spy
     JNZ DrawRight
         
     popa
+    FINISH:
 endm
-
+ 
+START:
 MOV AH, 0h
 MOV AL, 12h
 INT 10h
@@ -183,7 +195,7 @@ CMP AX, currY
 JB chk_y_2
 MOV row, 1
 MOV pointY, 115D
-JMP draw
+JMP stat
 
 chk_y_2:
 MOV AX, 0122h
@@ -191,16 +203,41 @@ CMP AX, currY
 JB assignr3
 MOV row, 2
 MOV pointY, 215D
-JMP draw  
+JMP stat  
 
 assignr3:
 MOV row, 3
 MOV pointY, 315D  
-JMP draw
+JMP stat
 
-draw:
+
+stat:
+MOV BL, 1
+CMP col, 1
+JNZ chk_col2
+MOV AX, row
+MOV box, AX
+SUB box, 1
+JMP DRAW
+
+chk_col2:
+CMP col, 2
+JNZ chk_col3 
+MOV AX, row
+MOV box, AX
+ADD BOX, 2
+JMP DRAW
+
+chk_col3:   
+MOV AX, row
+MOV box, AX
+ADD box, 5
+JMP DRAW
+
+DRAW:
 drawX pointX, pointY
 
+JMP where
 
 DONE:
 end
