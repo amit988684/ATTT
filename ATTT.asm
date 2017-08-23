@@ -1,179 +1,236 @@
-.model small
+.MODEL SMALL
 
-.data
+.DATA
 
-currX DW ?
-currY DW ?
-MovesPlayed DW ?
-Winner DW ?   
-col DB ?
-row DW ?
-pointX DW ?
-pointY DW ?
-OpointX DW ?
-OpointY DW ?
-Xbox DW ?  
-Obox DW ?
-DrewX DW ?
-drawn DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+; Holds current x-coordinate of the cursor position.
+currX       DW ?                                    
 
-.code
-.startup
-           
-chk_win macro
-    pusha     
+; Hold current y-coordinate of the cursor position.
+currY       DW ?                                   
+
+; Counts how many moves were played.
+MovesPlayed DW ?                                   
+
+; 
+Winner      DW ?                                   
+
+; Order of the coloum in which the cursor was clicked   
+col         DB ?
+
+; Order of the row in which the cursor was clicked
+row         DW ?
+
+; X-coordinate for drawing X.
+XpointX     DW ?            
+
+; Y-coordinate for drawing X.
+XpointY     DW ?                                       
+
+; X-coordinate for darwing O.
+OpointX     DW ?            
+
+; Y-coordinate for drawing O.
+OpointY     DW ?                                      
+
+; Holds the order of the box in which X will be drawn.
+Xbox        DW ?
+
+; Holds the order of the box in which O will be drawn.  
+Obox        DW ?
+
+; To check if X drew or not.
+DrewX       DW ?
+
+; Emu8086 refused to intialize the array
+; with the normal definition drawn DB TIMES 9 00h. 
+drawn DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h 
+
+; That's how the array is represented
+;
+;       |   |
+;     0 | 3 | 6
+;    ___|___|___
+;       |   |
+;     1 | 4 | 7
+;    ___|___|___
+;       |   |
+;     2 | 5 | 9
+;       |   |
+
+
+
+
+.CODE
+.STARTUP
+                          
+                          
+                          
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;  MACRO DEFINITIONS  ;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+                          
+checkWin MACRO
+    ; Checks for three consective 1's in the array drawn.
+    ; Checks vertically, horizontally, and diagonally.
     
-    ; VERTICAL
+    PUSHA     
+    
+    ; Vertical
     MOV CX, 3
-    MOV Winner, 0000
-    V1:    
+    MOV Winner, 0000h
+    Vertical1:    
     MOV SI, CX
     SUB SI, 1
     MOV AL, drawn[SI]
     CMP AL, 1
-    JNZ endvl1
+    JNZ endVertical1
     ADD Winner, 1
     
-    endvl1:
-    LOOP V1
+    endVertical1:
+    LOOP vertical1
     
     MOV BX, 3
     CMP BX, Winner
-    JZ FinishChk
+    JZ finishWinChk
     
     MOV CX, 3
-    MOV Winner, 0000
-    V2:
+    MOV Winner, 0000h
+    Vertical2:
     MOV SI, CX
     ADD SI, 2
     MOV AL, drawn[SI]
     CMP AL, 1
-    JNZ endvl2
+    JNZ endVertical2
     ADD Winner, 1
     
-    endvl2:
-    LOOP V2      
+    endVertical2:
+    LOOP Vertical2      
     
     MOV BX, 3
     CMP BX, Winner
-    JZ FinishChk
+    JZ finishWinChk
         
     
     MOV CX, 3
-    MOV Winner, 0000
-    V3:
+    MOV Winner, 0000h
+    Vertical3:
     MOV SI, CX
     ADD SI, 5
     MOV AL, drawn[SI]
     CMP AL, 1
-    JNZ endvl3
+    JNZ endVertical3
     ADD Winner, 1 
     
-    endvl3:
-    LOOP V3
+    endVertical3:
+    LOOP Vertical3
     
     MOV BX, 3
     CMP BX, Winner
-    JZ FinishChk
+    JZ finishWinChk
     
     ; HORIZONTAL
     MOV CX, 3
     MOV BX, 0 
-    MOV Winner, 0000
-    H1:
+    MOV Winner, 0000h
+    Horizontal2:
     MOV SI, BX
     MOV AL, drawn[SI]
     CMP AL, 1
-    JNZ endhl1
+    JNZ endHorizontal1
     ADD Winner, 1
     ADD BX, 3
     
-    endhl1:
-    LOOP H1
+    endHorizontal1:
+    LOOP Horizontal1
            
     MOV BX, 3
     CMP BX, Winner
-    JZ FinishChk
+    JZ finishWinChk
     
     
     MOV CX, 3
     MOV BX, 1 
-    MOV Winner, 0000
-    H2:
+    MOV Winner, 0000h
+    Horizontal2:
     MOV SI, BX
     MOV AL, drawn[SI]
     CMP AL, 1
-    JNZ endhl2
+    JNZ endHorizontal2
     ADD Winner, 1
     ADD BX, 3
     
-    endhl2:
-    LOOP H2
+    endHorizontal2:
+    LOOP Horizontal2
     
     MOV BX, 3
     CMP BX, Winner
-    JZ FinishChk
+    JZ finishWinChk
     
     MOV CX, 3
     MOV BX, 2 
-    MOV Winner, 0000
-    H3:
+    MOV Winner, 0000h
+    Horizontal3:
     MOV SI, BX
     MOV AL, drawn[SI]
     CMP AL, 1
-    JNZ endhl3
+    JNZ endHorizontal3
     ADD Winner, 1
     ADD BX, 3
     
-    endhl3:
-    LOOP H3
+    endHorizontal3:
+    LOOP Horizontal3
     
     MOV BX, 3
     CMP BX, Winner
-    JZ FinishChk
+    JZ finishWinChk
     
     MOV CX, 3
     MOV BX, 0 
-    MOV Winner, 0000
-    D1:
+    MOV Winner, 0000h
+    Diagonal1:
     MOV SI, BX
     MOV AL, drawn[SI]
     CMP AL, 1
-    JNZ enddl1
+    JNZ endDiagonal1
     ADD Winner, 1
     ADD BX, 4
     
-    enddl1:
-    LOOP D1
+    endDiagonal1:
+    LOOP Diagonal1
     
     MOV BX, 3
     CMP BX, Winner
-    JZ FinishChk
+    JZ finishWinChk
 
 
     MOV CX, 3
     MOV BX, 2
-    MOV Winner, 0000
-    D2:
+    MOV Winner, 0000h
+    Diagonal2:
     MOV SI, BX
     MOV AL, drawn[SI]
     CMP AL, 1
-    JNZ enddl2
+    JNZ endDiagonal2
     ADD Winner, 1
     ADD BX, 4
     
-    enddl2:
-    LOOP D2
+    endDiagonal2:
+    LOOP Diagonal2
  
  
-    FinishChk:
-    popa
-endm 
+    finishWinChk:
+    POPA
+ENDM
 
 
     
-drawX macro spx, spy
-    pusha     
+drawX MACRO startPointX, startPointY
+    PUSHA
+    
+    ; Chekc if there's already something drawn in the box.
+    ; If so, it'll wait for another input.
     
     MOV SI, Xbox
     MOV AL, drawn[SI]
@@ -184,15 +241,16 @@ drawX macro spx, spy
     MOV BL, 1
     MOV SI, Xbox
     MOV drawn[SI], BL  
+ 
+    ; Start of drawing
     
     MOV AL, 0Eh
-    MOV AH, 0Ch
+    MOV AH, 0Ch   
     
-    
-    MOV CX, spx
-    MOV DX, spy
+    MOV CX, startPointX
+    MOV DX, startPointY
     MOV BX, 50D
-    ADD BX, spx
+    ADD BX, startPointX
     
     DrawLeft:
     INT 10h
@@ -201,9 +259,9 @@ drawX macro spx, spy
     CMP BX, CX
     JNZ DrawLeft
     
-    MOV CX, spx
+    MOV CX, startPointX
     ADD CX, 50D
-    MOV DX, spy
+    MOV DX, startPointY
     MOV BX, CX
     SUB BX, 50D
     
@@ -214,14 +272,18 @@ drawX macro spx, spy
     CMP BX, CX
     JNZ DrawRight
     
-    MOV DrewX, 1    
-    popa
+    MOV DrewX, 1
+        
+    POPA
     FINISH:
-endm
+ENDM
 
 
-drawO macro OX, OY
-    pusha
+drawO MACRO centerPointX, centerPointY
+    PUSHA
+    
+    ; Checks if there's something drawn in the box.
+    ; If so, it'll increment the position by one and recheck.
     
     chk_clear:
     MOV SI, Obox
@@ -232,7 +294,7 @@ drawO macro OX, OY
     INC Obox
     MOV CX, 9
     CMP CX, Obox
-    JA OboxLoc
+    JA getOboxOrder
     MOV DX, 0000h
     MOV AX, Obox
     DIV CX
@@ -245,17 +307,24 @@ drawO macro OX, OY
     MOV drawn[SI], AL
     MOV AL, 0Eh
     MOV AH, 0Ch 
-    MOV CX, OX
-    MOV DX, OY
+    MOV CX, centerPointX
+    MOV DX, centerPointY
     INT 10h
     
-    popa
+    POPA
     FINISHO:
-endm
-
-
+ENDM
+                          
+                          
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;     MAIN PROGRAM    ;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
 START:
+
+; Set video mode at 640x480 pixels 
 MOV AH, 0h
 MOV AL, 12h
 INT 10h
@@ -269,22 +338,22 @@ MOV DX, 190
 MOV BX, 470
 
 
-HTOP:
+horizontalTop:
 INT 10h
 INC CX
 CMP BX, CX
-JNZ HTOP
+JNZ horizontalTop
 
 MOV CX, 170
 MOV DX, 290
 MOV BX, 470
 
 
-HLOW:
+horizontalLow:
 INT 10h
 INC CX
 CMP BX, CX
-JNZ HLOW
+JNZ horizontalLow
 
 
 MOV CX, 370
@@ -292,11 +361,11 @@ MOV DX, 90
 MOV BX, 390
 
 
-VRIGHT:
+verticalRight:
 INT 10h
 INC DX
 CMP BX, DX
-JNZ VRIGHT
+JNZ verticalRight
 
 
 MOV CX, 270
@@ -304,234 +373,262 @@ MOV DX, 90
 MOV BX, 390
 
 
-VLEFT:
+verticalLeft:
 INT 10h
 INC DX
 CMP BX, DX
-JNZ VLEFT
+JNZ verticalLeft
+
+; Finished drawing.
 
 
-mov ax, 1003h ; disable blinking.  
-mov bx, 0        
-int 10h
+; Mouse initialization. Any previous mouse pointer is hidden. 
+; Disable blinking:
 
-; hide text cursor:
-mov ch, 32
-mov ah, 1
-int 10h
+MOV AX, 1003h
+MOV BX, 0000h
+INT 10h
 
-; display mouse cursor:
-mov ax, 1
-int 33h
+; Hide text cursor:
+MOV CH, 32
+MOV AH, 1
+INT 10h
 
-where:
+; Display mouse cursor:
+MOV AX, 1
+INT 33h
+
+
+; Get position (in terms of X and Y) of the pointer
+
+getPointerLocation:
 MOV AX, 3
 INT 33h
 MOV currX, CX
 MOV currY, DX
 CMP BX, 1
 JZ chk_bounds
-JNZ where
-JMP DONE
+JNZ getPointerLocation
 
+
+; Check if the the position was outside of the box.
+; If so, wait for another input (click) by the user.
 
 chk_bounds:
-; For some unknown reason, the value of the x-coordinate
+; For some unknown reason, the value of the x-coordinate (CX register)
 ; is doubled. This very problem took me days to solve.
-
 
 MOV AX, 0154h
 CMP AX, currX
-JA where
+JA getPointerLocation
 
 MOV AX, 03ACh
 CMP AX, currX
-JB where
+JB getPointerLocation
 
 MOV AX, 05Ah
 CMP AX, currY
-JA where
+JA getPointerLocation
 
 MOV AX, 0186h
 CMP AX, currY
-JB where 
+JB getPointerLocation 
 
 
-; DETERMINING THE EXACT POSTION,
-; IN TERMS OF ROWS AND COLUMNS
+; Determining the exact position, in terms of rows and coloums.
+; The goal is to set the Start Point to in which drawing X will start from.
+; Friendly reminder: remember to put values in hex, and the x-coordinate is doubled.
 
-; Friendly reminder: remember to put values in hex
-; and the x-coordinate is doubled.
-
-chk_x:
+checkHorizontal1:
 MOV AX, 021Ch
 CMP AX, currX
-JB chk_x_2
+JB checkHorizontal2
 MOV col, 1
-MOV pointX, 195D
-JMP chk_y
+MOV XpointX, 195D
+JMP checkVertical1
 
-chk_x_2:
+checkHorizontal2:
 MOV AX, 02E4h
 CMP AX, currX
-JB assignc3
+JB checkHorizontal3
 MOV col, 2
-MOV pointX, 295D 
-JMP chk_y
+MOV XpointX, 295D 
+JMP checkVertical1
 
-assignc3:
+checkHorizontal3:
 MOV col, 3
-MOV pointX, 395D  
-JMP chk_y
+MOV XpointX, 395D  
+JMP checkVertical1
 
-chk_y:
+checkVertical1:
 MOV AX, 0BEh
 CMP AX, currY
-JB chk_y_2
+JB checkVertical2
 MOV row, 1
-MOV pointY, 115D
-JMP stat
+MOV XpointY, 115D
+JMP getXboxOrder
 
-chk_y_2:
+checkVertical2:
 MOV AX, 0122h
 CMP AX, currY
-JB assignr3
+JB checkVertical3
 MOV row, 2
-MOV pointY, 215D
-JMP stat  
+MOV XpointY, 215D
+JMP getXboxOrder  
 
-assignr3:
+checkVertical3:
 MOV row, 3
-MOV pointY, 315D  
-JMP stat
+MOV XpointY, 315D  
+JMP getXboxOrder
 
+; Determine the order of the box in which X will be drawn
+; If it is in the first column, then the position = row - 1
+; If the second column it is, position = row + 2
+; If the third column it is, position =  row + 5
+; Please see the figure the start of this code for clarification.
 
-stat:
+getXboxOrder:
 MOV BL, 1
 CMP col, 1
-JNZ chk_col2
+JNZ checkColumn2
 MOV AX, row
 MOV Xbox, AX
 SUB Xbox, 1
-JMP DRAW
+JMP STARTDRAWX
 
-chk_col2:
+checkColumn2:
 CMP col, 2
-JNZ chk_col3 
+JNZ checkColumn3 
 MOV AX, row
 MOV Xbox, AX
 ADD Xbox, 2
-JMP DRAW
+JMP STARTDRAWX
 
-chk_col3:   
+checkColumn3:   
 MOV AX, row
 MOV Xbox, AX
 ADD Xbox, 5
-JMP DRAW
+JMP STARTDRAWX
+          
+          
+; Starts drawing X.
+          
+STARTDRAWX:
+drawX XpointX, XpointY 
 
-DRAW:
-drawX pointX, pointY 
+; Calculates the position of O and starts drawing it.
 
-MOV BX, 1
+; If X wasn't drawn, for some reason, it would get the 
+; position of the pointer and attempt drawing again.
+
+MOV BX, 1          
 CMP BX, DrewX
-JNZ where
+JNZ getPointerLocation
 
 MOV AX, Xbox
 MOV Obox, AX
-ADD Obox, 4
-MOV CX, 9
+
+; This determines how far from X will O be drawn. 
+
+ADD Obox, 5                                      
+
+; If the calculated order of O box is greater than 9,
+; it will be divided and the modulus will be taken as the position.
+
+MOV CX, 9                                        
 CMP CX, Obox
-JA OboxLoc   
+JA getOboxOrder   
 MOV DX, 0000h
 MOV AX, Obox
 DIV CX
 MOV Obox, DX
 
-OboxLoc:
+getOboxOrder:
 MOV BX, 0
 CMP BX, Obox
-JNZ chk_obox1
+JNZ checkBox1
 MOV OpointX, 0DCh
 MOV OpointY, 08Ch 
-JMP dro
+JMP STARTDRAWO
 
-chk_obox1:
+checkBox1:
 MOV BX, 1
 CMP BX, Obox
-JNZ chk_obox2
+JNZ checkBox2
 MOV OpointX, 0DCh 
 MOV OpointY, 0F0h 
-JMP dro
+JMP STARTDRAWO
 
-chk_obox2:
+checkBox2:
 MOV BX, 2         
 CMP BX, Obox
-JNZ chk_box3
+JNZ checkBox3
 MOV OpointX, 0DCh 
 MOV OpointY, 0154h
-JMP dro           
+JMP STARTDRAWO           
 
-chk_box3:
+checkBox3:
 MOV BX, 3
 CMP BX, Obox
-JNZ chk_box4
+JNZ checkBox4
 MOV OpointX, 0140h
 MOV OpointY, 08Ch
-JMP dro
+JMP STARTDRAWO
 
-chk_box4:
+checkBox4:
 MOV BX, 4
 CMP BX, Obox
-JNZ chk_box5
+JNZ checkBox5
 MOV OpointX, 0140h
 MOV OpointY, 0F0h
-JMP dro
+JMP STARTDRAWO
 
-chk_box5:
+checkBox5:
 MOV BX, 5
 CMP BX, Obox
-JNZ chk_box6
+JNZ checkBox6
 MOV OpointX, 0140h
 MOV OpointY, 0154h
-JMP dro
+JMP STARTDRAWO
 
-chk_box6:
+checkBox6:
 MOV BX, 6
 CMP BX, Obox
-JNZ chk_box7
+JNZ checkBox7
 MOV OpointX, 01A4h
 MOV OpointY, 08Ch
-JMP dro
+JMP STARTDRAWO
 
-chk_box7:
+checkBox7:
 MOV BX, 7
 CMP BX, Obox
-JNZ chk_box8
+JNZ checkBox8
 MOV OpointX, 01A4h
 MOV OpointY, 0F0h
-JMP dro
+JMP STARTDRAWO
 
-chk_box8:
+checkBox8:
 MOV OpointX, 01A4h
 MOV OpointY, 0154h 
 
-dro:
 
+; Starts drawing O.
 
-
+STARTDRAWO:
 
 drawO OpointX, OpointY
- 
-MOV Winner, 0000h 
-chk_win
 
+; Checks if X won.
+
+MOV Winner, 0000h 
+checkWin
 
 MOV BX, 3
 CMP BX, Winner
 JZ DONE 
 
 
-JMP where
+JMP getPointerLocation
 
 DONE:
-end
+END
