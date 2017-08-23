@@ -4,7 +4,8 @@
 
 currX DW ?
 currY DW ?
-MovesPlayed DW ?   
+MovesPlayed DW ?
+Winner DW ?   
 col DB ?
 row DW ?
 pointX DW ?
@@ -20,10 +21,156 @@ drawn DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 .startup
            
 chk_win macro
-    pusha
+    pusha     
     
+    ; VERTICAL
+    MOV CX, 3
+    MOV Winner, 0000
+    V1:    
+    MOV SI, CX
+    SUB SI, 1
+    MOV AL, drawn[SI]
+    CMP AL, 1
+    JNZ endvl1
+    ADD Winner, 1
+    
+    endvl1:
+    LOOP V1
+    
+    MOV BX, 3
+    CMP BX, Winner
+    JZ FinishChk
+    
+    MOV CX, 3
+    MOV Winner, 0000
+    V2:
+    MOV SI, CX
+    ADD SI, 2
+    MOV AL, drawn[SI]
+    CMP AL, 1
+    JNZ endvl2
+    ADD Winner, 1
+    
+    endvl2:
+    LOOP V2      
+    
+    MOV BX, 3
+    CMP BX, Winner
+    JZ FinishChk
+        
+    
+    MOV CX, 3
+    MOV Winner, 0000
+    V3:
+    MOV SI, CX
+    ADD SI, 5
+    MOV AL, drawn[SI]
+    CMP AL, 1
+    JNZ endvl3
+    ADD Winner, 1 
+    
+    endvl3:
+    LOOP V3
+    
+    MOV BX, 3
+    CMP BX, Winner
+    JZ FinishChk
+    
+    ; HORIZONTAL
+    MOV CX, 3
+    MOV BX, 0 
+    MOV Winner, 0000
+    H1:
+    MOV SI, BX
+    MOV AL, drawn[SI]
+    CMP AL, 1
+    JNZ endhl1
+    ADD Winner, 1
+    ADD BX, 3
+    
+    endhl1:
+    LOOP H1
+           
+    MOV BX, 3
+    CMP BX, Winner
+    JZ FinishChk
+    
+    
+    MOV CX, 3
+    MOV BX, 1 
+    MOV Winner, 0000
+    H2:
+    MOV SI, BX
+    MOV AL, drawn[SI]
+    CMP AL, 1
+    JNZ endhl2
+    ADD Winner, 1
+    ADD BX, 3
+    
+    endhl2:
+    LOOP H2
+    
+    MOV BX, 3
+    CMP BX, Winner
+    JZ FinishChk
+    
+    MOV CX, 3
+    MOV BX, 2 
+    MOV Winner, 0000
+    H3:
+    MOV SI, BX
+    MOV AL, drawn[SI]
+    CMP AL, 1
+    JNZ endhl3
+    ADD Winner, 1
+    ADD BX, 3
+    
+    endhl3:
+    LOOP H3
+    
+    MOV BX, 3
+    CMP BX, Winner
+    JZ FinishChk
+    
+    MOV CX, 3
+    MOV BX, 0 
+    MOV Winner, 0000
+    D1:
+    MOV SI, BX
+    MOV AL, drawn[SI]
+    CMP AL, 1
+    JNZ enddl1
+    ADD Winner, 1
+    ADD BX, 4
+    
+    enddl1:
+    LOOP D1
+    
+    MOV BX, 3
+    CMP BX, Winner
+    JZ FinishChk
+
+
+    MOV CX, 3
+    MOV BX, 2
+    MOV Winner, 0000
+    D2:
+    MOV SI, BX
+    MOV AL, drawn[SI]
+    CMP AL, 1
+    JNZ enddl2
+    ADD Winner, 1
+    ADD BX, 4
+    
+    enddl2:
+    LOOP D2
+ 
+ 
+    FinishChk:
     popa
-endm
+endm 
+
+
     
 drawX macro spx, spy
     pusha     
@@ -370,12 +517,19 @@ MOV OpointY, 0154h
 
 dro:
 
+
+
+
 drawO OpointX, OpointY
  
-INC MovesPlayed
-MOV BX, 5
-CMP BX, MovesPlayed
-; 
+MOV Winner, 0000h 
+chk_win
+
+
+MOV BX, 3
+CMP BX, Winner
+JZ DONE 
+
 
 JMP where
 
