@@ -44,6 +44,9 @@ DrewX       DW ?
 ; Celebration message
 celebrationMessage DB "WINNER WINNER CHICKEN DINNER!"
 
+; Replay message
+replayMessage DB "Do you want to play again? (Y/N)"
+
 ; Emu8086 refused to intialize the array
 ; with the normal definition drawn DB TIMES 9 00h. 
 drawn DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h 
@@ -646,7 +649,7 @@ JMP getPointerLocation
 celebrateWinning:
 
 
-; Clear the screen
+; Clear the screen.
 MOV AH, 00h
 MOV AL, 12h
 INT 10h
@@ -668,9 +671,34 @@ MOV AH, 2
 INT 21h
 INC CX
 CMP CX, 29
-JNZ writeCharacter
+JNZ writeCharacter 
 
+; Display replay message.
 
+MOV CX, 0
+writeCharacter2:
+MOV SI, CX
+MOV DL, replayMessage[SI]
+MOV AH, 2
+INT 21h
+INC CX
+CMP CX, 32
+JNZ writeCharacter2
+
+ 
+; Read the response character
+
+MOV AH, 1
+INT 21h
+
+CMP AL, 'Y'
+JZ START
+CMP AL, 'y'
+JZ START
+CMP AL, 'N'
+JZ DONE
+CMP AL, 'n'
+JZ DONE
 
 DONE:
 END
