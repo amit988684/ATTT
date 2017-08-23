@@ -253,7 +253,7 @@ drawX MACRO startPointX, startPointY
  
     ; Start of drawing
     
-    MOV AL, 0Eh
+    MOV AL, 02h
     MOV AH, 0Ch   
     
     MOV CX, startPointX
@@ -315,7 +315,7 @@ drawO MACRO centerPointX, centerPointY
     MOV SI, Obox
     MOV AL, 2
     MOV drawn[SI], AL
-    MOV AL, 0Eh
+    MOV AL, 02h
     MOV AH, 0Ch 
     MOV CX, centerPointX
     MOV DX, centerPointY
@@ -341,7 +341,7 @@ MOV AL, 12h
 INT 10h
 
 
-MOV AL, 0Eh
+MOV AL, 0Fh
 MOV AH, 0Ch
 
 MOV CX, 170
@@ -656,7 +656,7 @@ INT 10h
 
 ; Set cursor position.
 MOV AH, 2
-MOV DH, 15 
+MOV DH, 27 
 MOV DL, 25
 MOV BH, 0
 INT 10h
@@ -672,6 +672,15 @@ INT 21h
 INC CX
 CMP CX, 29
 JNZ writeCharacter 
+
+; Set cursor position for replay message.
+
+MOV AH, 2
+MOV DH, 29 
+MOV DL, 28
+MOV BH, 0
+INT 10h
+
 
 ; Display replay message.
 
