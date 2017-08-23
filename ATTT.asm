@@ -8,7 +8,11 @@ col DB ?
 row DW ?
 pointX DW ?
 pointY DW ?
-box DW ?
+OpointX DW ?
+OpointY DW ?
+Xbox DW ?  
+Obox DW ?
+DrewX DW ?
 drawn DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 
 .code
@@ -18,13 +22,14 @@ drawn DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 drawX macro spx, spy
     pusha     
     
-    MOV SI, box
+    MOV SI, Xbox
     MOV AL, drawn[SI]
     CMP AL, 1
+    MOV DrewX, 0000h
     JZ FINISH
     
     MOV BL, 1
-    MOV SI, box
+    MOV SI, Xbox
     MOV drawn[SI], BL  
     
     MOV AL, 0Eh
@@ -55,10 +60,47 @@ drawX macro spx, spy
     INC DX
     CMP BX, CX
     JNZ DrawRight
-        
+    
+    MOV DrewX, 1    
     popa
     FINISH:
 endm
+
+
+drawO macro OX, OY
+    pusha
+    
+    chk_clear:
+    MOV SI, Obox
+    MOV AL, drawn[SI]
+    CMP AL, 1
+    JNZ good
+    
+    INC Obox
+    MOV CX, 9
+    CMP CX, Obox
+    JA OboxLoc
+    MOV DX, 0000h
+    MOV AX, Obox
+    DIV CX
+    MOV DX, Obox
+    JMP chk_clear
+    
+    good:
+    MOV SI, Obox
+    MOV AL, 1
+    MOV drawn[SI], AL
+    MOV AL, 0Eh
+    MOV AH, 0Ch 
+    MOV CX, OX
+    MOV DX, OY
+    INT 10h
+    
+    popa
+    FINISHO:
+endm
+
+
  
 START:
 MOV AH, 0h
@@ -216,26 +258,114 @@ MOV BL, 1
 CMP col, 1
 JNZ chk_col2
 MOV AX, row
-MOV box, AX
-SUB box, 1
+MOV Xbox, AX
+SUB Xbox, 1
 JMP DRAW
 
 chk_col2:
 CMP col, 2
 JNZ chk_col3 
 MOV AX, row
-MOV box, AX
-ADD BOX, 2
+MOV Xbox, AX
+ADD Xbox, 2
 JMP DRAW
 
 chk_col3:   
 MOV AX, row
-MOV box, AX
-ADD box, 5
+MOV Xbox, AX
+ADD Xbox, 5
 JMP DRAW
 
 DRAW:
-drawX pointX, pointY
+drawX pointX, pointY 
+
+MOV BX, 1
+CMP BX, DrewX
+JNZ where
+
+MOV AX, Xbox
+MOV Obox, AX
+ADD Obox, 3
+MOV CX, 9
+CMP CX, Obox
+JA OboxLoc   
+MOV DX, 0000h
+MOV AX, Obox
+DIV CX
+MOV Obox, DX
+
+OboxLoc:
+MOV BX, 0
+CMP BX, Obox
+JNZ chk_obox1
+MOV OpointX, 0DCh
+MOV OpointY, 08Ch 
+JMP dro
+
+chk_obox1:
+MOV BX, 1
+CMP BX, Obox
+JNZ chk_obox2
+MOV OpointX, 0DCh 
+MOV OpointY, 0F0h 
+JMP dro
+
+chk_obox2:
+MOV BX, 2         
+CMP BX, Obox
+JNZ chk_box3
+MOV OpointX, 0DCh 
+MOV OpointY, 0154h
+JMP dro           
+
+chk_box3:
+MOV BX, 3
+CMP BX, Obox
+JNZ chk_box4
+MOV OpointX, 0140h
+MOV OpointY, 08Ch
+JMP dro
+
+chk_box4:
+MOV BX, 4
+CMP BX, Obox
+JNZ chk_box5
+MOV OpointX, 0140h
+MOV OpointY, 0F0h
+JMP dro
+
+chk_box5:
+MOV BX, 5
+CMP BX, Obox
+JNZ chk_box6
+MOV OpointX, 0140h
+MOV OpointY, 0154h
+JMP dro
+
+chk_box6:
+MOV BX, 6
+CMP BX, Obox
+JNZ chk_box7
+MOV OpointX, 01A4h
+MOV OpointY, 08Ch
+JMP dro
+
+chk_box7:
+MOV BX, 7
+CMP BX, Obox
+JNZ chk_box8
+MOV OpointX, 01A4h
+MOV OpointY, 0F0h
+JMP dro
+
+chk_box8:
+MOV OpointX, 01A4h
+MOV OpointY, 0154h 
+
+dro:
+
+drawO OpointX, OpointY
+
 
 JMP where
 
