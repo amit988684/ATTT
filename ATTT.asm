@@ -69,7 +69,19 @@ drawn DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;  MACRO DEFINITIONS  ;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+clearScreen MACRO
+    PUSHA
+    
+    MOV AX, 0600h
+    MOV BH, 15 
+    MOV DH, 24
+    MOV DL, 79
+    INT 10h
+    
+    POPA
+ENDM 
                           
 checkWin MACRO
     ; Checks for three consective 1's in the array drawn.
@@ -134,7 +146,7 @@ checkWin MACRO
     MOV CX, 3
     MOV BX, 0 
     MOV Winner, 0000h
-    Horizontal2:
+    Horizontal1:
     MOV SI, BX
     MOV AL, drawn[SI]
     CMP AL, 1
@@ -625,10 +637,14 @@ checkWin
 
 MOV BX, 3
 CMP BX, Winner
-JZ DONE 
+JZ celebrateWinning 
 
 
 JMP getPointerLocation
+
+celebrateWinning:
+clearScreen
+
 
 DONE:
 END
