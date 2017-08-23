@@ -9,7 +9,7 @@ currX       DW ?
 currY       DW ?                                   
 
 ; Counts how many moves were played.
-MovesPlayed DW ?                                   
+movesPlayed DW ?                                   
 
 ; 
 Winner      DW ?                                   
@@ -74,17 +74,6 @@ drawn DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-clearScreen MACRO
-    PUSHA
-    
-    MOV AX, 0600h
-    MOV BH, 15 
-    MOV DH, 24
-    MOV DL, 79
-    INT 10h
-    
-    POPA
-ENDM 
                           
 checkWin MACRO
     ; Checks for three consective 1's in the array drawn.
@@ -288,7 +277,8 @@ drawX MACRO startPointX, startPointY
     JNZ DrawRight
     
     MOV DrewX, 1
-        
+    
+    INC movesPlayed    
     POPA
     FINISH:
 ENDM
@@ -325,7 +315,8 @@ drawO MACRO centerPointX, centerPointY
     MOV CX, centerPointX
     MOV DX, centerPointY
     INT 10h
-    
+   
+    INC movesPlayed
     POPA
     FINISHO:
 ENDM
@@ -633,7 +624,12 @@ STARTDRAWO:
 
 drawO OpointX, OpointY
 
-; Checks if X won.
+; Checks if X won, after four moves (at least).
+
+MOV BX, 4
+CMP BX, movesPlayed
+JAE getPointerLocation
+ 
 
 MOV Winner, 0000h 
 checkWin
@@ -646,7 +642,7 @@ JZ celebrateWinning
 JMP getPointerLocation
 
 celebrateWinning:
-clearScreen
+
 
 ; Set cursor position.
 MOV AH, 2
