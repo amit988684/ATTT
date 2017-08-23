@@ -48,6 +48,8 @@ celebrationMessage DB "WINNER WINNER CHICKEN DINNER!"
 ; with the normal definition drawn DB TIMES 9 00h. 
 drawn DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h 
 
+
+
 ; That's how the array is represented
 ;
 ;       |   |
@@ -644,6 +646,11 @@ JMP getPointerLocation
 celebrateWinning:
 
 
+; Clear the screen
+MOV AH, 00h
+MOV AL, 12h
+INT 10h
+
 ; Set cursor position.
 MOV AH, 2
 MOV DH, 15 
@@ -653,14 +660,14 @@ INT 10h
 
 ; Display the celebration message.
 
-MOV CX, 29
+MOV CX, 0
 writeCharacter:
 MOV SI, CX
 MOV DL, celebrationMessage[SI]
 MOV AH, 2
 INT 21h
 INC CX
-CMP CX, 30
+CMP CX, 29
 JNZ writeCharacter
 
 
