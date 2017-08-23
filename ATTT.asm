@@ -39,7 +39,10 @@ Xbox        DW ?
 Obox        DW ?
 
 ; To check if X drew or not.
-DrewX       DW ?
+DrewX       DW ?            
+
+; Celebration message
+celebrationMessage DB "WINNER WINNER CHICKEN DINNER!"
 
 ; Emu8086 refused to intialize the array
 ; with the normal definition drawn DB TIMES 9 00h. 
@@ -644,6 +647,26 @@ JMP getPointerLocation
 
 celebrateWinning:
 clearScreen
+
+; Set cursor position.
+MOV AH, 2
+MOV DH, 15 
+MOV DL, 25
+MOV BH, 0
+INT 10h
+
+; Display the celebration message.
+
+MOV CX, 29
+writeCharacter:
+MOV SI, CX
+MOV DL, celebrationMessage[SI]
+MOV AH, 2
+INT 21h
+INC CX
+CMP CX, 30
+JNZ writeCharacter
+
 
 
 DONE:
