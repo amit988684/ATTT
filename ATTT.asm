@@ -3,7 +3,8 @@
 .data
 
 currX DW ?
-currY DW ?   
+currY DW ?
+MovesPlayed DW ?   
 col DB ?
 row DW ?
 pointX DW ?
@@ -18,15 +19,20 @@ drawn DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 .code
 .startup
            
-
+chk_win macro
+    pusha
+    
+    popa
+endm
+    
 drawX macro spx, spy
     pusha     
     
     MOV SI, Xbox
     MOV AL, drawn[SI]
-    CMP AL, 1
+    CMP AL, 0
     MOV DrewX, 0000h
-    JZ FINISH
+    JNZ FINISH
     
     MOV BL, 1
     MOV SI, Xbox
@@ -73,8 +79,8 @@ drawO macro OX, OY
     chk_clear:
     MOV SI, Obox
     MOV AL, drawn[SI]
-    CMP AL, 1
-    JNZ good
+    CMP AL, 0
+    JZ good
     
     INC Obox
     MOV CX, 9
@@ -88,7 +94,7 @@ drawO macro OX, OY
     
     good:
     MOV SI, Obox
-    MOV AL, 1
+    MOV AL, 2
     MOV drawn[SI], AL
     MOV AL, 0Eh
     MOV AH, 0Ch 
@@ -285,7 +291,7 @@ JNZ where
 
 MOV AX, Xbox
 MOV Obox, AX
-ADD Obox, 3
+ADD Obox, 4
 MOV CX, 9
 CMP CX, Obox
 JA OboxLoc   
@@ -365,7 +371,11 @@ MOV OpointY, 0154h
 dro:
 
 drawO OpointX, OpointY
-
+ 
+INC MovesPlayed
+MOV BX, 5
+CMP BX, MovesPlayed
+; 
 
 JMP where
 
