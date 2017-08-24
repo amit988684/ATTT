@@ -169,6 +169,7 @@ drawO MACRO centerPointX, centerPointY
     MOV AX, Obox
     DIV CX
     MOV Obox, DX
+    JMP getOboxOrder
     JMP chk_clear
     
     good:
@@ -203,8 +204,37 @@ clearScreenAndSetCursor MACRO
     INT 10h
 
     POPA
-ENDM   
-                          
+ENDM
+
+resetValues Macro
+    PUSHA
+    MOV currX, 0000
+    MOV currY, 0000
+    MOV movesPlayed, 00
+    MOV Winner, 00
+    MOV Won, 0
+    MOV col, 0
+    MOV row, 0
+    MOV XpointX, 0000
+    MOV XpointY, 0000
+    MOV OpointX, 0000
+    MOV OpointY, 0000
+    MOV Xbox, 00
+    MOV Obox, 00
+    MOV drewX, 00
+    
+    MOV BX, 9
+    MOV CX, 0
+    resetDrawn:
+    MOV SI, CX
+    MOV drawn[SI], 00
+    INC CX
+    CMP BX, CX
+    JNZ resetDrawn
+    
+    
+    POPA
+ENDM                          
                           
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -212,14 +242,11 @@ ENDM
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
-START:
-; Reset drawn values
+START:          
 
-MOV CX, 8
-RESET:
-MOV SI, CX
-MOV drawn[SI], 00h
-LOOP RESET
+; Reset all the values, for replay purposes
+
+resetValues
 
 ; Set video mode at 640x480 pixels 
 MOV AH, 0h
