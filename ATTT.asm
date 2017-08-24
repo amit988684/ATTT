@@ -11,8 +11,11 @@ currY       DW ?
 ; Counts how many moves were played.
 movesPlayed DW ?                                   
 
-; 
-Winner      DW ?                                   
+; Used to check if the player has won
+Winner      DB ?
+
+; Hold literal 'W', 'L' or 'T' to indicate Won, Loss, Tie.
+Won         DB ?                                   
 
 ; Order of the coloum in which the cursor was clicked   
 col         DB ?
@@ -43,6 +46,12 @@ DrewX       DW ?
 
 ; Celebration message
 celebrationMessage DB "WINNER WINNER CHICKEN DINNER!"
+
+; Game over message
+gameOverMessage DB "Game over! Better luck next time!" 
+
+; Tie message
+tieMessage  DB "DRAW! Better luck next time!"
 
 ; Replay message
 replayMessage DB "Do you want to play again? (Y/N)"
@@ -80,165 +89,16 @@ drawn DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
                           
-checkWin MACRO
-    ; Checks for three consective 1's in the array drawn.
-    ; Checks vertically, horizontally, and diagonally.
-    
-    PUSHA     
-    
-    ; Vertical
-    MOV CX, 3
-    MOV Winner, 0000h
-    Vertical1:    
-    MOV SI, CX
-    SUB SI, 1
-    MOV AL, drawn[SI]
-    CMP AL, 1
-    JNZ endVertical1
-    ADD Winner, 1
-    
-    endVertical1:
-    LOOP vertical1
-    
-    MOV BX, 3
-    CMP BX, Winner
-    JZ finishWinChk
-    
-    MOV CX, 3
-    MOV Winner, 0000h
-    Vertical2:
-    MOV SI, CX
-    ADD SI, 2
-    MOV AL, drawn[SI]
-    CMP AL, 1
-    JNZ endVertical2
-    ADD Winner, 1
-    
-    endVertical2:
-    LOOP Vertical2      
-    
-    MOV BX, 3
-    CMP BX, Winner
-    JZ finishWinChk
-        
-    
-    MOV CX, 3
-    MOV Winner, 0000h
-    Vertical3:
-    MOV SI, CX
-    ADD SI, 5
-    MOV AL, drawn[SI]
-    CMP AL, 1
-    JNZ endVertical3
-    ADD Winner, 1 
-    
-    endVertical3:
-    LOOP Vertical3
-    
-    MOV BX, 3
-    CMP BX, Winner
-    JZ finishWinChk
-    
-    ; HORIZONTAL
-    MOV CX, 3
-    MOV BX, 0 
-    MOV Winner, 0000h
-    Horizontal1:
-    MOV SI, BX
-    MOV AL, drawn[SI]
-    CMP AL, 1
-    JNZ endHorizontal1
-    ADD Winner, 1
-    ADD BX, 3
-    
-    endHorizontal1:
-    LOOP Horizontal1
-           
-    MOV BX, 3
-    CMP BX, Winner
-    JZ finishWinChk
-    
-    
-    MOV CX, 3
-    MOV BX, 1 
-    MOV Winner, 0000h
-    Horizontal2:
-    MOV SI, BX
-    MOV AL, drawn[SI]
-    CMP AL, 1
-    JNZ endHorizontal2
-    ADD Winner, 1
-    ADD BX, 3
-    
-    endHorizontal2:
-    LOOP Horizontal2
-    
-    MOV BX, 3
-    CMP BX, Winner
-    JZ finishWinChk
-    
-    MOV CX, 3
-    MOV BX, 2 
-    MOV Winner, 0000h
-    Horizontal3:
-    MOV SI, BX
-    MOV AL, drawn[SI]
-    CMP AL, 1
-    JNZ endHorizontal3
-    ADD Winner, 1
-    ADD BX, 3
-    
-    endHorizontal3:
-    LOOP Horizontal3
-    
-    MOV BX, 3
-    CMP BX, Winner
-    JZ finishWinChk
-    
-    MOV CX, 3
-    MOV BX, 0 
-    MOV Winner, 0000h
-    Diagonal1:
-    MOV SI, BX
-    MOV AL, drawn[SI]
-    CMP AL, 1
-    JNZ endDiagonal1
-    ADD Winner, 1
-    ADD BX, 4
-    
-    endDiagonal1:
-    LOOP Diagonal1
-    
-    MOV BX, 3
-    CMP BX, Winner
-    JZ finishWinChk
+;checkWin MACRO
 
-
-    MOV CX, 3
-    MOV BX, 2
-    MOV Winner, 0000h
-    Diagonal2:
-    MOV SI, BX
-    MOV AL, drawn[SI]
-    CMP AL, 1
-    JNZ endDiagonal2
-    ADD Winner, 1
-    ADD BX, 4
-    
-    endDiagonal2:
-    LOOP Diagonal2
- 
- 
-    finishWinChk:
-    POPA
-ENDM
+;ENDM
 
 
     
 drawX MACRO startPointX, startPointY
     PUSHA
     
-    ; Chekc if there's already something drawn in the box.
+    ; Checks if there's already something drawn in the box.
     ; If so, it'll wait for another input.
     
     MOV SI, Xbox
@@ -247,7 +107,7 @@ drawX MACRO startPointX, startPointY
     MOV DrewX, 0000h
     JNZ FINISH
     
-    MOV BL, 1
+    MOV BL, 5
     MOV SI, Xbox
     MOV drawn[SI], BL  
  
@@ -308,12 +168,12 @@ drawO MACRO centerPointX, centerPointY
     MOV DX, 0000h
     MOV AX, Obox
     DIV CX
-    MOV DX, Obox
+    MOV Obox, DX
     JMP chk_clear
     
     good:
     MOV SI, Obox
-    MOV AL, 2
+    MOV AL, 7
     MOV drawn[SI], AL
     MOV AL, 02h
     MOV AH, 0Ch 
@@ -325,6 +185,25 @@ drawO MACRO centerPointX, centerPointY
     POPA
     FINISHO:
 ENDM
+
+clearScreenAndSetCursor MACRO
+    PUSHA   
+    
+    ; Clear the screen.
+    MOV AH, 00h
+    MOV AL, 12h
+    INT 10h
+
+    ; Set cursor position.
+    MOV AH, 2
+    MOV DH, 27 
+    MOV DL, 25
+    MOV BH, 0
+    
+    INT 10h
+
+    POPA
+ENDM   
                           
                           
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -334,6 +213,13 @@ ENDM
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
 START:
+; Reset drawn values
+
+MOV CX, 8
+RESET:
+MOV SI, CX
+MOV drawn[SI], 00h
+LOOP RESET
 
 ; Set video mode at 640x480 pixels 
 MOV AH, 0h
@@ -534,7 +420,27 @@ drawX XpointX, XpointY
 
 MOV BX, 1          
 CMP BX, DrewX
-JNZ getPointerLocation
+JNZ getPointerLocation                 
+
+; Checks if X won, after four moves (at least).
+
+MOV BX, 4
+CMP BX, movesPlayed
+JAE STARTCALCO 
+
+MOV Winner, 0000h 
+CALL checkWin
+
+CMP Won, 'W'
+JZ celebrateWinning
+CMP Won, 'L'
+JZ displayGameOverMessage 
+
+MOV BX, 9
+CMP BX, movesPlayed
+JZ displayTieMessage       
+           
+STARTCALCO:
 
 MOV AX, Xbox
 MOV Obox, AX
@@ -622,44 +528,220 @@ checkBox8:
 MOV OpointX, 01A4h
 MOV OpointY, 0154h 
 
+ 
 
 ; Starts drawing O.
 
 STARTDRAWO:
-
+           
 drawO OpointX, OpointY
 
-; Checks if X won, after four moves (at least).
+; Checks if O won, after four moves (at least).
 
 MOV BX, 4
 CMP BX, movesPlayed
 JAE getPointerLocation
- 
 
 MOV Winner, 0000h 
-checkWin
+CALL checkWin
 
-MOV BX, 3
-CMP BX, Winner
-JZ celebrateWinning 
+CMP Won, 'W'
+JZ celebrateWinning
+CMP Won, 'L'
+JZ displayGameOverMessage
+MOV BX, 9
+CMP BX, movesPlayed
+JZ displayTieMessage 
 
 
-JMP getPointerLocation
+JMP getPointerLocation 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;     Checking Win    ;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+checkWin PROC    
+    
+    ; Checks for three consective 1's in the array drawn.
+    ; Checks vertically, horizontally, and diagonally.
+    
+    PUSHA     
+    
+    ; Vertical
+    MOV CX, 3
+    MOV Winner, 0000h
+    Vertical1:    
+    MOV SI, CX
+    SUB SI, 1
+    MOV AL, drawn[SI]
+    ADD Winner, AL
+    LOOP Vertical1
+    
+    MOV BL, 15
+    CMP BL, Winner
+    JZ finishWinChkWon
+    
+    MOV BL, 21
+    CMP BL, Winner
+    JZ finishWinChkLoss
+    
+    MOV CX, 3
+    MOV Winner, 0000h
+    Vertical2:
+    MOV SI, CX
+    ADD SI, 2
+    MOV AL, drawn[SI]
+    ADD Winner, AL
+    LOOP Vertical2      
+    
+    MOV BL, 15
+    CMP BL, Winner
+    JZ finishWinChkWon
+    
+    MOV BL, 21
+    CMP BL, Winner
+    JZ finishWinChkLoss
+    
+    MOV CX, 3
+    MOV Winner, 0000h
+    Vertical3:
+    MOV SI, CX
+    ADD SI, 5
+    MOV AL, drawn[SI]
+    ADD Winner, AL
+    LOOP Vertical3
+    
+    MOV BL, 15
+    CMP BL, Winner
+    JZ finishWinChkWon
+    
+    MOV BL, 21
+    CMP BL, Winner
+    JZ finishWinChkLoss
+    
+    
+    ; HORIZONTAL
+    MOV CX, 3
+    MOV BX, 0 
+    MOV Winner, 0000h
+    Horizontal1:
+    MOV SI, BX
+    MOV AL, drawn[SI]
+    ADD Winner, AL
+    ADD BX, 3
+    LOOP Horizontal1
+ 
+    MOV BL, 15
+    CMP BL, Winner
+    JZ finishWinChkWon
+    
+    MOV BL, 21
+    CMP BL, Winner
+    JZ finishWinChkLoss
+    
+       
+    MOV CX, 3
+    MOV BX, 1 
+    MOV Winner, 0000h
+    Horizontal2:
+    MOV SI, BX
+    MOV AL, drawn[SI]
+    ADD Winner, AL
+    ADD BX, 3
+    LOOP Horizontal2
+    
+    MOV BL, 15
+    CMP BL, Winner
+    JZ finishWinChkWon
+    
+    MOV BL, 21
+    CMP BL, Winner
+    JZ finishWinChkLoss         
+
+    MOV CX, 3
+    MOV BX, 2 
+    MOV Winner, 0000h
+    Horizontal3:
+    MOV SI, BX
+    MOV AL, drawn[SI]
+    ADD Winner, AL
+    ADD BX, 3
+    LOOP Horizontal3
+    
+    MOV BL, 15
+    CMP BL, Winner
+    JZ finishWinChkWon
+    
+    MOV BL, 21
+    CMP BL, Winner
+    JZ finishWinChkLoss         
+             
+    MOV CX, 3
+    MOV BX, 0 
+    MOV Winner, 0000h
+    Diagonal1:
+    MOV SI, BX
+    MOV AL, drawn[SI]
+    ADD Winner, AL
+    ADD BX, 4
+    LOOP Diagonal1     
+    
+    MOV BL, 15
+    CMP BL, Winner
+    JZ finishWinChkWon
+    
+    MOV BL, 21
+    CMP BL, Winner
+    JZ finishWinChkLoss
+
+    MOV CX, 3
+    MOV BX, 2
+    MOV Winner, 0000h
+    Diagonal2:
+    MOV SI, BX
+    MOV AL, drawn[SI]
+    ADD Winner, AL
+    ADD BX, 4
+    LOOP Diagonal2
+
+    MOV BL, 15
+    CMP BL, Winner
+    JZ finishWinChkWon
+    
+    MOV BL, 21
+    CMP BL, Winner
+    JZ finishWinChkLoss
+    
+    JMP finishWinChk
+    
+    finishWinChkWon:
+    MOV Won, 'W'
+    JMP finishWinChk
+    
+    finishWinChkLoss:
+    MOV Won, 'L'
+ 
+    finishWinChk:
+    POPA
+    RET
+    
+checkWin ENDP
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;; Displaying Messages ;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 celebrateWinning:
 
-
-; Clear the screen.
-MOV AH, 00h
-MOV AL, 12h
-INT 10h
-
-; Set cursor position.
-MOV AH, 2
-MOV DH, 27 
-MOV DL, 25
-MOV BH, 0
-INT 10h
+clearScreenAndSetCursor
 
 ; Display the celebration message.
 
@@ -672,6 +754,48 @@ INT 21h
 INC CX
 CMP CX, 29
 JNZ writeCharacter 
+JMP displayReplayMessage
+                         
+
+displayGameOverMessage:
+                         
+clearScreenAndSetCursor
+
+; Display game over message
+
+MOV CX, 0
+writeCharacter1:
+MOV SI, CX
+MOV DL, gameOverMessage[SI]
+MOV AH, 2
+INT 21h
+INC CX
+CMP CX, 33
+JNZ writeCharacter1
+JMP displayReplayMessage
+
+; Display tie message  
+
+
+displayTieMessage:     
+
+clearScreenAndSetCursor
+
+MOV CX, 0
+writeCharacter2:
+MOV SI, CX
+MOV DL, tieMessage[SI]
+MOV AH, 2
+INT 21h
+INC CX
+CMP CX, 28
+JNZ writeCharacter2
+JMP displayReplayMessage
+                                             
+                                             
+; Display replay message and recieve response
+
+displayReplayMessage:
 
 ; Set cursor position for replay message.
 
@@ -685,14 +809,14 @@ INT 10h
 ; Display replay message.
 
 MOV CX, 0
-writeCharacter2:
+writeCharacter3:
 MOV SI, CX
 MOV DL, replayMessage[SI]
 MOV AH, 2
 INT 21h
 INC CX
 CMP CX, 32
-JNZ writeCharacter2
+JNZ writeCharacter3
 
  
 ; Read the response character
