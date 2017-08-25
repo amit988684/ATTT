@@ -176,7 +176,7 @@ drawO MACRO centerPointX, centerPointY
     MOV SI, Obox
     MOV AL, 7
     MOV drawn[SI], AL
-    MOV AL, 02h
+    MOV AL, 0Eh
     MOV AH, 0Ch 
     MOV CX, centerPointX
     MOV DX, centerPointY
